@@ -43,14 +43,16 @@ use std::{cmp, fmt, iter::Iterator};
 use num_traits::{Bounded, CheckedAdd, CheckedSub, One};
 use num_traits::bounds::{LowerBounded, UpperBounded};
 
-/// This is the main data type `GranularID` which represents
+/// This is the main data type `GranularId` which represents any ID with arbitrary granularity,
+/// meaning that there is indefinitely many `GranularId`s in-between any two `GranularId`s. See the
+/// crate-level documentation for an introduction.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GranularId<T> {
     id: Vec<T>,
 }
 
 impl<T: fmt::Display> fmt::Display for GranularId<T> {
-    /// An `GranularId` is displayed similarly to a version string, where the `GranularId` created
+    /// A `GranularId` is displayed similarly to a version string, where the `GranularId` created
     /// from the vector `[1, 2, 3]` is displayed as `1.2.3`. If the `GranularId` is the root ID
     /// (doesn't have any components), it is displayed as `<root>`.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -132,7 +134,7 @@ impl<T> From<Vec<T>> for GranularId<T>
     /// A vector of components may be turned into a `GranularId`. Keep in mind that the maximum
     /// `GranularId` of any type `T` is the one containing just the component `T::max`, attempting
     /// to convert any vector starting with `T::max` will result in the
-    /// [`upper bound`](GranularId<T>::upper_bound) `GranularId` for that type.
+    /// [`upper bound`](GranularId<T>::max_value) `GranularId` for that type.
     fn from(other: Vec<T>) -> Self {
         if other
             .first()
@@ -149,7 +151,7 @@ impl<T> From<Vec<T>> for GranularId<T>
 
 impl<T> From<GranularId<T>> for Vec<T>
 {
-    /// A `GranularId` can be turned into a vector of its components.
+    /// Creates a `GranularId` can be turned into a vector of its components.
     fn from(other: GranularId<T>) -> Vec<T> {
         other.id
     }
