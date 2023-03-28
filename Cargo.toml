@@ -1,10 +1,11 @@
 [package]
 name = "granular-id"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 description = "ID numbers with arbitrary precision"
 repository = "https://github.com/cmdjojo/granular-id/"
+readme = "README.md"
 
 [dependencies]
 num-traits = "0.2.15"
