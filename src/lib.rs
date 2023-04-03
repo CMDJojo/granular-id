@@ -50,7 +50,7 @@ use num_traits::{Bounded, CheckedAdd, CheckedSub, One};
 /// [`num_traits`](https://docs.rs/num-traits/latest/num_traits/index.html) bounds.
 ///
 /// An ID basically consists of multiple *components*
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct GranularId<T> {
     id: Vec<T>,
 }
@@ -606,7 +606,30 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
+
+    #[test]
+    fn keys_in_hm() {
+        // Create a HM
+        let mut hm: HashMap<GranularId<u8>, &'static str> = HashMap::new();
+
+        // Create three sample keys
+        let id_1: GranularId<u8> = vec![1].into();
+        let id_1_1: GranularId<u8> = vec![1, 1].into();
+        let id_2: GranularId<u8> = vec![2].into();
+
+        // Inserting sample values
+        hm.insert(id_1.clone(), "abc");
+        hm.insert(id_1_1.clone(), "def");
+        hm.insert(id_2.clone(), "ghi");
+
+        // Checking that they work as expected
+        assert_eq!(hm.get(&id_1).unwrap(), &"abc");
+        assert_eq!(hm.get(&id_1_1).unwrap(), &"def");
+        assert_eq!(hm.get(&id_2).unwrap(), &"ghi");
+    }
 
     #[test]
     fn readme_example() {
