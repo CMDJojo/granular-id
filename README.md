@@ -24,8 +24,8 @@ fn test() {
     let id: GranularId<u8> = vec![1, 2, 3].into();
 
     // Get the parent ID (id: 1.2)
-    let parent = id.parent();
-    assert_eq!(parent, Some(vec![1, 2].into()));
+    let parent = id.parent().unwrap();
+    assert_eq!(parent, vec![1, 2].into());
 
     // Iterate over the following siblings of 1.2.3
     let mut next_siblings = id.next_siblings();
@@ -54,7 +54,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-granular-id = "0.3.0"
+granular-id = "0.4.0"
 ```
 
 ## License

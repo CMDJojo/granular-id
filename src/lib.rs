@@ -386,44 +386,46 @@ impl<T> GranularId<T> {
         Some(Self { id })
     }
 
-    /// Returns an iterator over the parents of this `GranularId`. The iterator will yield all the
-    /// parents, in order from the next-most parent until the root `GranularId`. This will give the
-    /// same results as repeatedly calling [`GranularId::parent`]. This function consumes the
+    /// Returns an iterator over the ancestors of this `GranularId`. The iterator will yield all the
+    /// ancestors, in order from the next-most parent until the root `GranularId`. This will give the
+    /// same results as iteratively calling [`GranularId::parent`]. This function consumes the
     /// `GranularId`.
     ///
     ///```rust
     /// use granular_id::GranularId;
     /// let id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
-    /// let mut parents = id.parents();
-    /// assert_eq!(parents.next(), Some(vec![1, 2].into())); // id 1.2
-    /// assert_eq!(parents.next(), Some(vec![1].into())); // id 1
-    /// assert_eq!(parents.next(), Some(vec![].into())); // root id
-    /// assert_eq!(parents.next(), None); // There are no more parents at this point
+    /// let mut ancestors = id.into_ancestors();
+    /// assert_eq!(ancestors.next(), Some(vec![1, 2].into())); // id 1.2
+    /// assert_eq!(ancestors.next(), Some(vec![1].into())); // id 1
+    /// assert_eq!(ancestors.next(), Some(vec![].into())); // root id
+    /// assert_eq!(ancestors.next(), None); // There are no more ancestors at this point
     ///```
-    pub fn into_parents(self) -> Parents<T> {
-        Parents {
+    #[must_use]
+    pub fn into_ancestors(self) -> Ancestors<T> {
+        Ancestors {
             current: Some(self),
         }
     }
 
-    /// Returns an iterator over the parents of this `GranularId`. The iterator will yield all the
-    /// parents, in order from the next-most parent until the root `GranularId`. This will give the
-    /// same results as repeatedly calling [`GranularId::parent`].
+    /// Returns an iterator over the ancestors of this `GranularId`. The iterator will yield all the
+    /// ancestors, in order from the next-most parent until the root `GranularId`. This will give the
+    /// same results as iteratively calling [`GranularId::parent`].
     ///
     ///```rust
     /// use granular_id::GranularId;
     /// let id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
-    /// let mut parents = id.parents();
-    /// assert_eq!(parents.next(), Some(vec![1, 2].into())); // id 1.2
-    /// assert_eq!(parents.next(), Some(vec![1].into())); // id 1
-    /// assert_eq!(parents.next(), Some(vec![].into())); // root id
-    /// assert_eq!(parents.next(), None); // There are no more parents at this point
+    /// let mut ancestors = id.ancestors();
+    /// assert_eq!(ancestors.next(), Some(vec![1, 2].into())); // id 1.2
+    /// assert_eq!(ancestors.next(), Some(vec![1].into())); // id 1
+    /// assert_eq!(ancestors.next(), Some(vec![].into())); // root id
+    /// assert_eq!(ancestors.next(), None); // There are no more parents at this point
     ///```
-    pub fn parents(&self) -> Parents<T>
+    #[must_use]
+    pub fn ancestors(&self) -> Ancestors<T>
     where
         T: Clone,
     {
-        Parents {
+        Ancestors {
             current: Some(self.clone()),
         }
     }
@@ -656,18 +658,18 @@ where
     }
 }
 
-pub struct Parents<T> {
+pub struct Ancestors<T> {
     current: Option<GranularId<T>>,
 }
 
-impl<T> Iterator for Parents<T>
+impl<T> Iterator for Ancestors<T>
 where
     T: Clone,
 {
     type Item = GranularId<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.current = self.current.as_ref().and_then(|id| id.parent());
+        self.current = self.current.as_ref().and_then(GranularId::parent);
         self.current.clone()
     }
 }
@@ -705,8 +707,8 @@ mod tests {
         let id: GranularId<u8> = vec![1, 2, 3].into();
 
         // Get the parent ID (id: 1.2)
-        let parent = id.parent();
-        assert_eq!(parent, Some(vec![1, 2].into()));
+        let parent = id.parent().unwrap();
+        assert_eq!(parent, vec![1, 2].into());
 
         // Iterate over the following siblings of 1.2.3
         let mut next_siblings = id.next_siblings();
