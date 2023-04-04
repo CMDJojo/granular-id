@@ -1,13 +1,13 @@
-//! This crate contains the type `GranularID`, which is a data type which can provide ID numbers in
+//! This crate contains the type `GranularId`, which is a data type which can provide ID numbers in
 //! a sequential order, where between any two ID:s, there are infinitely many *more granular* ID:s.
 //! You can think of this as version numbers with an infinite granularity, so if there are versions
 //! 1 and 2, there are ID:s 1.1, 1.2, 1.3 etc in-between them. Additionally, in-between ID 1.1 and
 //! 1.2, there are infinitely many ID:s 1.1.1, 1.1.2 and so on.
 //!
-//! `GranularID`s is best used with any unsized integer type, where each component of the ID:s may
-//! range from the minimum bound to the maximum bound of that integer type. The `GranularID` that
-//! starts with the upper bound of the integer type is the very maximum `GranularID`. This means
-//! that, using `u8`, all these `GranularID<u8>`s exist, in increasing order:
+//! `GranularId`s is best used with any unsized integer type, where each component of the ID:s may
+//! range from the minimum bound to the maximum bound of that integer type. The `GranularId` that
+//! starts with the upper bound of the integer type is the very maximum `GranularId`. This means
+//! that, using `u8`, all these `GranularId<u8>`s exist, in increasing order:
 //! * `254`
 //! * `254.0`
 //! * `254.1`
@@ -20,7 +20,7 @@
 //! * `255`
 //! `255` is the highest ID available of this type (i.e. there is no `255.0`, `255.1` etc), and is
 //! the upper bound for this type. This constraint is added so that there is an upper bound to the
-//! `GranularID<T>` type if `T` has an upper bound.
+//! `GranularId<T>` type if `T` has an upper bound.
 //!
 //! Even though it is recommended to use unsized integers for ID components, any types conforming
 //! to the appropriate [`num_traits`](https://docs.rs/num-traits/latest/num_traits/index.html) may

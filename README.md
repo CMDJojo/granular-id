@@ -54,7 +54,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-granular-id = "0.4.0"
+granular-id = "0.4.1"
 ```
 
 ## License
