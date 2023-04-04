@@ -347,48 +347,100 @@ impl<T> GranularId<T> {
     /// Turns this `GranularId` into its parent, that is, the same `GranularId` with the last
     /// component removed. If this `GranularId` is the root (has no components), this function
     /// returns the root. For a mutating version, see [`GranularId::pop`], and for a copying
-    /// version, see [`GranularId::parent`]
+    /// version, see [`GranularId::parent`]. If this `GranularId` doesn't have any components (is
+    /// the root ID), this function returns `None` since the root ID doesn't have a parent.
     ///
     /// ```rust
     /// use granular_id::GranularId;
     /// let id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
-    /// assert_eq!(id.into_parent(), vec![1, 2].into()); // id 1.2
+    /// assert_eq!(id.into_parent(), Some(vec![1, 2].into())); // id 1.2
     /// ```
     #[must_use]
-    pub fn into_parent(mut self) -> Self {
+    pub fn into_parent(mut self) -> Option<Self> {
+        if self.id.is_empty() {
+            return None;
+        }
         self.id.pop();
-        self
+        Some(self)
     }
 
     /// Gets the parent of this `GranularId`, that is, the same `GranularId` with the last component
-    /// removed.
+    /// removed. If this `GranularId` doesn't have any components (is the root ID), this function
+    /// returns `None` since the root ID doesn't have a parent.
     ///
     /// ```rust
     /// use granular_id::GranularId;
     /// let id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
-    /// assert_eq!(id.parent(), vec![1, 2].into()); // id 1.2
+    /// assert_eq!(id.parent(), Some(vec![1, 2].into())); // id 1.2
     /// ```
     #[must_use]
-    pub fn parent(&self) -> Self
+    pub fn parent(&self) -> Option<Self>
     where
         T: Clone,
     {
+        if self.id.is_empty() {
+            return None;
+        }
         let mut id = self.id.clone();
         id.pop();
-        Self { id }
+        Some(Self { id })
+    }
+
+    /// Returns an iterator over the parents of this `GranularId`. The iterator will yield all the
+    /// parents, in order from the next-most parent until the root `GranularId`. This will give the
+    /// same results as repeatedly calling [`GranularId::parent`]. This function consumes the
+    /// `GranularId`.
+    ///
+    ///```rust
+    /// use granular_id::GranularId;
+    /// let id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
+    /// let mut parents = id.parents();
+    /// assert_eq!(parents.next(), Some(vec![1, 2].into())); // id 1.2
+    /// assert_eq!(parents.next(), Some(vec![1].into())); // id 1
+    /// assert_eq!(parents.next(), Some(vec![].into())); // root id
+    /// assert_eq!(parents.next(), None); // There are no more parents at this point
+    ///```
+    pub fn into_parents(self) -> Parents<T> {
+        Parents {
+            current: Some(self),
+        }
+    }
+
+    /// Returns an iterator over the parents of this `GranularId`. The iterator will yield all the
+    /// parents, in order from the next-most parent until the root `GranularId`. This will give the
+    /// same results as repeatedly calling [`GranularId::parent`].
+    ///
+    ///```rust
+    /// use granular_id::GranularId;
+    /// let id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
+    /// let mut parents = id.parents();
+    /// assert_eq!(parents.next(), Some(vec![1, 2].into())); // id 1.2
+    /// assert_eq!(parents.next(), Some(vec![1].into())); // id 1
+    /// assert_eq!(parents.next(), Some(vec![].into())); // root id
+    /// assert_eq!(parents.next(), None); // There are no more parents at this point
+    ///```
+    pub fn parents(&self) -> Parents<T>
+    where
+        T: Clone,
+    {
+        Parents {
+            current: Some(self.clone()),
+        }
     }
 
     /// Removes the last component of this `GranularId`. To get the parent of any `GranularId`
-    /// without mutating it, see [`GranularId::parent`]
+    /// without mutating it, see [`GranularId::parent`]. The function returns the component popped,
+    /// akin to [`Vec::pop`], which is `None` if this `GranularId` doesn't have a parent. In that
+    /// case, this `GranularId` will remain unchanged as the root.
     ///
     /// ```rust
     /// use granular_id::GranularId;
     /// let mut id: GranularId<u8> = vec![1, 2, 3].into(); // id 1.2.3
-    /// id.pop();
+    /// assert_eq!(id.pop(), Some(3)); // popping the last component '3'
     /// assert_eq!(id, vec![1, 2].into()); // id 1.2
     /// ```
-    pub fn pop(&mut self) {
-        self.id.pop();
+    pub fn pop(&mut self) -> Option<T> {
+        self.id.pop()
     }
 
     /// Pushes a new component to the `GranularId`, adding it as a new last component. Since the
@@ -604,6 +656,22 @@ where
     }
 }
 
+pub struct Parents<T> {
+    current: Option<GranularId<T>>,
+}
+
+impl<T> Iterator for Parents<T>
+where
+    T: Clone,
+{
+    type Item = GranularId<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.current = self.current.as_ref().and_then(|id| id.parent());
+        self.current.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -638,7 +706,7 @@ mod tests {
 
         // Get the parent ID (id: 1.2)
         let parent = id.parent();
-        assert_eq!(parent, vec![1, 2].into());
+        assert_eq!(parent, Some(vec![1, 2].into()));
 
         // Iterate over the following siblings of 1.2.3
         let mut next_siblings = id.next_siblings();

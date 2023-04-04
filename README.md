@@ -17,31 +17,35 @@ This crate provides a data type `GranularId<T>` that can represent ID numbers wi
 ## Example usage
 
 ```rust
-// Create a new GranularId from a vec of u8 (id: 1.2.3)
-let id: GranularId<u8> = vec![1, 2, 3].into();
+use granular_id::GranularId;
 
-// Get the parent ID (id: 1.2)
-let parent = id.parent();
-assert_eq!(parent, vec![1, 2].into());
+fn test() {
+    // Create a new GranularId from a vec of u8 (id: 1.2.3)
+    let id: GranularId<u8> = vec![1, 2, 3].into();
 
-// Iterate over the following siblings of 1.2.3
-let mut next_siblings = id.next_siblings();
-// First one is 1.2.4
-assert_eq!(next_siblings.next().unwrap(), vec![1, 2, 4].into());
-// Then, 1.2.5, etc
-assert_eq!(next_siblings.next().unwrap(), vec![1, 2, 5].into());
-assert_eq!(next_siblings.next().unwrap(), vec![1, 2, 6].into());
+    // Get the parent ID (id: 1.2)
+    let parent = id.parent();
+    assert_eq!(parent, Some(vec![1, 2].into()));
 
-// Get an iterator over childrens of 1.2.3
-let mut children = id.children();
-// First one is 1.2.3.0
-assert_eq!(children.next().unwrap(), vec![1, 2, 3, 0].into());
-// Then, 1.2.3.1, etc
-assert_eq!(children.next().unwrap(), vec![1, 2, 3, 1].into());
-assert_eq!(children.next().unwrap(), vec![1, 2, 3, 2].into());
+    // Iterate over the following siblings of 1.2.3
+    let mut next_siblings = id.next_siblings();
+    // First one is 1.2.4
+    assert_eq!(next_siblings.next().unwrap(), vec![1, 2, 4].into());
+    // Then, 1.2.5, etc
+    assert_eq!(next_siblings.next().unwrap(), vec![1, 2, 5].into());
+    assert_eq!(next_siblings.next().unwrap(), vec![1, 2, 6].into());
 
-// Each parent is always smaller than all of its children
-assert!(parent < id);
+    // Get an iterator over childrens of 1.2.3
+    let mut children = id.children();
+    // First one is 1.2.3.0
+    assert_eq!(children.next().unwrap(), vec![1, 2, 3, 0].into());
+    // Then, 1.2.3.1, etc
+    assert_eq!(children.next().unwrap(), vec![1, 2, 3, 1].into());
+    assert_eq!(children.next().unwrap(), vec![1, 2, 3, 2].into());
+
+    // Each parent is always smaller than all of its children
+    assert!(parent < id);
+}
 ```
 
 ## Installation
@@ -50,7 +54,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-granular-id = "0.2.0"
+granular-id = "0.3.0"
 ```
 
 ## License
