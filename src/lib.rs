@@ -40,7 +40,7 @@
 
 use std::{cmp, fmt, iter::Iterator};
 
-use num_traits::bounds::{LowerBounded, UpperBounded};
+pub use num_traits::bounds::{LowerBounded, UpperBounded};
 use num_traits::{Bounded, CheckedAdd, CheckedSub, One};
 
 /// The data type `GranularId` represents any ID which can have an arbitrary granularity,
